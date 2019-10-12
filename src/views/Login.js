@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { Redirect } from 'react-router-dom'
 
 import Avatar from '@material-ui/core/Avatar'
@@ -8,10 +8,14 @@ import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
 
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
+import firebase from 'firebase'
 
-import { AppContext } from '../Firebase'
+import uiConfig from '../firebase/uiConfig'
+
 import Copyright from '../components/common/Copyright'
 import AppHeader from '../components/layout/AppHeader'
+
+import { FirebaseContext } from '../firebase/firebaseContext'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -31,15 +35,21 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function SignIn() {
+const Login = () => {
+  const { app, state } = useContext(FirebaseContext)
   const classes = useStyles()
-  const [isSignedIn, setIsSignedIn] = useState(false)
-  const firebase = useContext(AppContext)
+
+  useEffect(() => {
+    const unregisterAuthObserver = app.auth().onAuthStateChanged(user => {
+      state.setUser(user)
+    })
+    return () => unregisterAuthObserver()
+  }, [])
 
   return (
     <div>
       <AppHeader></AppHeader>
-      {isSignedIn ? (
+      {state.user ? (
         <Redirect to="/home"></Redirect>
       ) : (
         <Container component="main" maxWidth="sm">
@@ -47,10 +57,7 @@ export default function SignIn() {
             <Avatar className={classes.avatar}>
               <LockOutlinedIcon />
             </Avatar>
-            <StyledFirebaseAuth
-              uiConfig={firebase.getUiConfig()}
-              firebaseAuth={firebase.getAuth()}
-            />
+            <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={app.auth()} />
           </div>
           <Box mt={8}>
             <Copyright />
@@ -60,3 +67,5 @@ export default function SignIn() {
     </div>
   )
 }
+
+export default Login

@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
 import List from '@material-ui/core/List'
 import Divider from '@material-ui/core/Divider'
+import Button from '@material-ui/core/Button'
 
 import AppHeader from '../components/layout/AppHeader'
 import SlotList from '../components/slots/SlotList'
