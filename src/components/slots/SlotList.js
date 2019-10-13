@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useContext } from 'react'
 
+import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import Typography from '@material-ui/core/Typography'
@@ -14,7 +15,7 @@ import CheckIcon from '@material-ui/icons/Check'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import CloseIcon from '@material-ui/icons/Close'
 
-import { makeStyles } from '@material-ui/core/styles'
+import { FirebaseContext } from '../../firebase/firebaseContext'
 
 const useStyles = makeStyles(theme => ({
   inline: {
@@ -27,20 +28,33 @@ const useStyles = makeStyles(theme => ({
 
 const SlotList = ({ slot }) => {
   const classes = useStyles()
-  let primaryAction = <CheckIcon></CheckIcon>
-  let secondaryAction = null
+  const { state } = useContext(FirebaseContext)
 
-  if (slot.status === 'Temporarily Occupied') {
-    primaryAction = <NotificationsIcon></NotificationsIcon>
-  } else if (slot.status === 'Occupied') {
-    primaryAction = <CloseIcon></CloseIcon>
+  console.log(state)
+
+  let primaryAction = null
+  let secondaryAction = null
+  let headingText = `${slot.title} - `
+
+  if (slot.status.toLowerCase() === 'occupied') {
+    if (slot.isTemporaryOwner) {
+      headingText += ' Temporarily'
+      if (slot.owner === state.user.displayName) {
+        primaryAction = <NotificationsIcon></NotificationsIcon>
+      }
+    } else {
+      primaryAction = <CloseIcon></CloseIcon>
+    }
   } else {
+    primaryAction = <CheckIcon></CheckIcon>
     secondaryAction = (
       <Button variant="contained" size="small" className={classes.button}>
         Occupy
       </Button>
     )
   }
+
+  headingText += ` ${slot.status}`
 
   return (
     <React.Fragment>
@@ -53,7 +67,7 @@ const SlotList = ({ slot }) => {
           />
         </ListItemAvatar>
         <ListItemText
-          primary={`${slot.title} - ${slot.status}`}
+          primary={headingText}
           secondary={
             <React.Fragment>
               <Typography
@@ -69,7 +83,7 @@ const SlotList = ({ slot }) => {
           }
         />
         <ListItemSecondaryAction>
-          <IconButton>{primaryAction}</IconButton>
+          {primaryAction ? <IconButton>{primaryAction}</IconButton> : null}
         </ListItemSecondaryAction>
       </ListItem>
     </React.Fragment>

@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
 import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
 import Divider from '@material-ui/core/Divider'
-import Button from '@material-ui/core/Button'
+
+import { FirebaseContext } from '../firebase/firebaseContext'
 
 import AppHeader from '../components/layout/AppHeader'
 import SlotList from '../components/slots/SlotList'
@@ -47,22 +49,37 @@ const slots = [
 
 const Home = ({ match }) => {
   const classes = useStyles()
+  const { app } = useContext(FirebaseContext)
+  const [slots, setSlots] = useState(null)
 
   const isPublic = match.path === '/home'
+  const slotRef = app.database().ref('/slots')
+
+  useEffect(() => {
+    slotRef.on('value', snapshot => {
+      setSlots(snapshot.val())
+    })
+  }, [])
+
+  let list = <ListItem>No entries found...</ListItem>
+  if (slots) {
+    list = slots.map((slot, key) => (
+      <React.Fragment key={key}>
+        <SlotList slot={slot}></SlotList>
+        <Divider variant="inset" component="li"></Divider>
+      </React.Fragment>
+    ))
+  }
+
+  console.log('slots', slots)
+  console.log('list', list)
 
   return (
     <React.Fragment>
       <CssBaseline />
       <AppHeader isPublic={isPublic}></AppHeader>
       <Container maxWidth="md" component="main" className={classes.container}>
-        <List className={classes.list}>
-          {slots.map(slot => (
-            <React.Fragment>
-              <SlotList slot={slot} key={slot.title}></SlotList>
-              <Divider variant="inset" component="li"></Divider>
-            </React.Fragment>
-          ))}
-        </List>
+        <List className={classes.list}>{list}</List>
       </Container>
     </React.Fragment>
   )
