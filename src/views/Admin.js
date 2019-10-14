@@ -102,7 +102,8 @@ const subviews = {
   admins: <Admins></Admins>
 }
 
-export default function Dashboard() {
+const Dashboard = props => {
+  const { history } = props
   const classes = useStyles()
 
   const [open, setOpen] = useState(true)
@@ -113,12 +114,16 @@ export default function Dashboard() {
     setOpen(false)
   }
 
-  const [activePage, setActivePage] = useState('admins')
+  const [activePage, setActivePage] = useState('slots')
 
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <AppHeader isOpen={open} handleDrawerOpen={handleDrawerOpen}></AppHeader>
+      <AppHeader
+        isOpen={open}
+        handleDrawerOpen={handleDrawerOpen}
+        history={history}
+      ></AppHeader>
       <AppDrawer
         isOpen={open}
         handleDrawerClose={handleDrawerClose}
@@ -137,3 +142,5 @@ export default function Dashboard() {
     </div>
   )
 }
+
+export default Dashboard

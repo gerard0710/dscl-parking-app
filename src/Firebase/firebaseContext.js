@@ -14,7 +14,7 @@ export { FirebaseContext }
 
 export default ({ children }) => {
   const setUser = user => {
-    setState({ user })
+    setState({ ...state, user: user })
   }
 
   const initState = {
