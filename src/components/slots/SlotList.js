@@ -30,8 +30,6 @@ const SlotList = ({ slot }) => {
   const classes = useStyles()
   const { state } = useContext(FirebaseContext)
 
-  console.log(state)
-
   let primaryAction = null
   let secondaryAction = null
   let headingText = `${slot.title} - `

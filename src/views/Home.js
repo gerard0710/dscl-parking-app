@@ -47,7 +47,8 @@ const slots = [
   }
 ]
 
-const Home = ({ match }) => {
+const Home = props => {
+  const { match, history } = props
   const classes = useStyles()
   const { app } = useContext(FirebaseContext)
   const [slots, setSlots] = useState(null)
@@ -71,13 +72,10 @@ const Home = ({ match }) => {
     ))
   }
 
-  console.log('slots', slots)
-  console.log('list', list)
-
   return (
     <React.Fragment>
       <CssBaseline />
-      <AppHeader isPublic={isPublic}></AppHeader>
+      <AppHeader isPublic={isPublic} history={history}></AppHeader>
       <Container maxWidth="md" component="main" className={classes.container}>
         <List className={classes.list}>{list}</List>
       </Container>

@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { Redirect } from 'react-router-dom'
 
 import clsx from 'clsx'
 
@@ -8,6 +9,9 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
+import Button from '@material-ui/core/Button'
+
+import { FirebaseContext } from '../../firebase/firebaseContext'
 
 const drawerWidth = 240
 
@@ -90,8 +94,21 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const AppHeader = ({ isOpen, handleDrawerOpen, isPublic }) => {
+const AppHeader = props => {
+  const { isOpen, handleDrawerOpen, isPublic, history } = props
   const classes = useStyles()
+
+  const { app, state } = useContext(FirebaseContext)
+
+  const signOut = () => {
+    app
+      .auth()
+      .signOut()
+      .then(() => {
+        state.setUser(null)
+        history.push('/')
+      })
+  }
 
   return (
     <div className={classes.root}>
@@ -117,6 +134,22 @@ const AppHeader = ({ isOpen, handleDrawerOpen, isPublic }) => {
           <Typography variant="h6" className={classes.title}>
             DSCL Manila Parking
           </Typography>
+
+          {state.user ? (
+            <React.Fragment>
+              <Button color="inherit" onClick={signOut}>
+                Logout
+              </Button>
+              <Button
+                color="inherit"
+                onClick={() => {
+                  history.push('/admin')
+                }}
+              >
+                Go to Admin
+              </Button>
+            </React.Fragment>
+          ) : null}
         </Toolbar>
       </AppBar>
     </div>
