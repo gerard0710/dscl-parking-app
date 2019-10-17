@@ -8,8 +8,34 @@ import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import Typography from '@material-ui/core/Typography'
 
-const AppTable = ({ title, data, withAction, actions }) => {
-  const headings = Object.keys(data[0])
+import AppTableActions from './AppTableActions'
+
+const AppTable = props => {
+  const { title, data, actions } = props
+
+  let headings = []
+  let list = []
+
+  if (data) {
+    const sample = data[Object.keys(data)[0]]
+    headings = Object.keys(sample)
+
+    Object.entries(data).forEach(([key, value]) => {
+      let row = (
+        <TableRow key={key}>
+          {headings.map(heading => (
+            <TableCell key={`${key}-${heading}`}>{value[heading]}</TableCell>
+          ))}
+          {actions ? (
+            <TableCell>
+              <AppTableActions actions={actions} id={key}></AppTableActions>
+            </TableCell>
+          ) : null}
+        </TableRow>
+      )
+      list.push(row)
+    })
+  }
 
   const formatHeadings = heading => {
     const separatedString = heading.replace(/([A-Z])/g, ' $1')
@@ -27,18 +53,13 @@ const AppTable = ({ title, data, withAction, actions }) => {
             {headings.map(heading => (
               <TableCell key={heading}>{formatHeadings(heading)}</TableCell>
             ))}
-
-            {withAction && actions ? <TableCell>ACTION</TableCell> : null}
+            {actions ? (
+              <TableCell>{formatHeadings('Actions')}</TableCell>
+            ) : null}
           </TableRow>
         </TableHead>
         <TableBody>
-          {data.map((d, index) => (
-            <TableRow key={index}>
-              {headings.map(heading => (
-                <TableCell key={d[heading]}>{d[heading]}</TableCell>
-              ))}
-            </TableRow>
-          ))}
+          {list}
 
           {/** TODO: Map through data and build table body
 
