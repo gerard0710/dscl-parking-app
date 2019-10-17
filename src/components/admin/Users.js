@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
+
+import { FirebaseContext } from '../../firebase/firebaseContext'
 
 import AppTable from '../common/AppTable'
 
@@ -30,13 +32,24 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const Tenants = () => {
+const Users = () => {
   const classes = useStyles()
+  const { app } = useContext(FirebaseContext)
+  const [users, setUsers] = useState(null)
+
+  useEffect(() => {
+    app.users().on('value', snapshot => {
+      setUsers(snapshot.val())
+    })
+  }, [users])
+
+  console.log('>>>>', users)
+
   return (
     <Paper className={classes.paper}>
-      <AppTable title="Tenants" data={rows} withAction={true}></AppTable>
+      <AppTable title="Users" data={rows} withAction={true}></AppTable>
     </Paper>
   )
 }
 
-export default Tenants
+export default Users

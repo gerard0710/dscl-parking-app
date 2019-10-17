@@ -57,19 +57,22 @@ const Home = props => {
   const slotRef = app.database().ref('/slots')
 
   useEffect(() => {
-    slotRef.on('value', snapshot => {
+    slotRef.orderByValue().on('value', snapshot => {
       setSlots(snapshot.val())
     })
   }, [])
 
-  let list = <ListItem>No entries found...</ListItem>
+  let list = []
+
   if (slots) {
-    list = slots.map((slot, key) => (
-      <React.Fragment key={key}>
-        <SlotList slot={slot}></SlotList>
-        <Divider variant="inset" component="li"></Divider>
-      </React.Fragment>
-    ))
+    Object.entries(slots).forEach(([key, value]) => {
+      list.push(
+        <React.Fragment key={key}>
+          <SlotList slot={value}></SlotList>
+          <Divider variant="inset" component="li"></Divider>
+        </React.Fragment>
+      )
+    })
   }
 
   return (
@@ -77,7 +80,9 @@ const Home = props => {
       <CssBaseline />
       <AppHeader isPublic={isPublic} history={history}></AppHeader>
       <Container maxWidth="md" component="main" className={classes.container}>
-        <List className={classes.list}>{list}</List>
+        <List className={classes.list}>
+          {list.length > 0 ? list : <ListItem>No entries found...</ListItem>}
+        </List>
       </Container>
     </React.Fragment>
   )

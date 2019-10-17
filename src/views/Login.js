@@ -10,8 +10,6 @@ import Container from '@material-ui/core/Container'
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth'
 import firebase from 'firebase'
 
-import uiConfig from '../firebase/uiConfig'
-
 import Copyright from '../components/common/Copyright'
 import AppHeader from '../components/layout/AppHeader'
 
@@ -36,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const Login = () => {
-  const { app, state } = useContext(FirebaseContext)
+  const { app, state, dispatch } = useContext(FirebaseContext)
   const classes = useStyles()
 
   useEffect(() => {
@@ -45,6 +43,32 @@ const Login = () => {
     })
     return () => unregisterAuthObserver()
   }, [])
+
+  const uiConfig = {
+    signInFlow: 'popup',
+    signInOptions: [
+      firebase.auth.EmailAuthProvider.PROVIDER_ID,
+      firebase.auth.GoogleAuthProvider.PROVIDER_ID
+    ],
+    callbacks: {
+      signInSuccessWithAuthResult: authResult => {
+        if (authResult.additionalUserInfo.isNewUser) {
+          const { displayName, email, uid } = authResult.user
+          const payload = {
+            uid,
+            details: {
+              displayName,
+              email
+            }
+          }
+
+          dispatch({ type: 'addUser', payload })
+        }
+
+        return false
+      }
+    }
+  }
 
   return (
     <div>

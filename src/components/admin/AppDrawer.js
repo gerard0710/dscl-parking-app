@@ -125,12 +125,7 @@ const AppDrawer = ({ isOpen, handleDrawerClose, setActivePage }) => {
           </ListItemIcon>
           <ListItemText primary="Slots" />
         </ListItem>
-        <ListItem button onClick={() => handleMenuSelect('tenants')}>
-          <ListItemIcon>
-            <PeopleIcon />
-          </ListItemIcon>
-          <ListItemText primary="Tenants" />
-        </ListItem>
+
         <ListItem button onClick={() => handleMenuSelect('schedule')}>
           <ListItemIcon>
             <AssignmentIcon />
@@ -138,11 +133,11 @@ const AppDrawer = ({ isOpen, handleDrawerClose, setActivePage }) => {
           <ListItemText primary="Schedule" />
         </ListItem>
 
-        <ListItem button onClick={() => handleMenuSelect('admins')}>
+        <ListItem button onClick={() => handleMenuSelect('users')}>
           <ListItemIcon>
-            <AccountCircleIcon />
+            <PeopleIcon />
           </ListItemIcon>
-          <ListItemText primary="Admins" />
+          <ListItemText primary="Users" />
         </ListItem>
       </List>
     </Drawer>

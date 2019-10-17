@@ -10,9 +10,8 @@ import AppHeader from '../components/layout/AppHeader'
 
 import AppDrawer from '../components/admin/AppDrawer'
 import Slots from '../components/admin/Slots'
-import Tenants from '../components/admin/Tenants'
+import Users from '../components/admin/Users'
 import ScheduleList from '../components/admin/ScheduleList'
-import Admins from '../components/admin/Admins'
 
 const drawerWidth = 240
 
@@ -97,16 +96,15 @@ const useStyles = makeStyles(theme => ({
 
 const subviews = {
   slots: <Slots></Slots>,
-  tenants: <Tenants></Tenants>,
-  schedule: <ScheduleList></ScheduleList>,
-  admins: <Admins></Admins>
+  users: <Users></Users>,
+  schedule: <ScheduleList></ScheduleList>
 }
 
 const Dashboard = props => {
   const { history } = props
   const classes = useStyles()
 
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const handleDrawerOpen = () => {
     setOpen(true)
   }

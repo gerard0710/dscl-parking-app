@@ -1,40 +1,11 @@
-import React from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 
+import { FirebaseContext } from '../../firebase/firebaseContext'
 import AppTable from '../common/AppTable'
-
-// Generate Order Data
-function createData(number, owner, ownershipDate, tenant, status) {
-  return { number, owner, ownershipDate, tenant, status }
-}
-
-const rows = [
-  createData(1, 'Elvis Presley', 'Sep 23 - 27, 2019', 'John Smith', 'Occupied'),
-  createData(2, 'Paul McCartney', 'Sep 23 - 27, 2019', 'John Smith', 'Vacant'),
-  createData(
-    3,
-    'Tom Scholz',
-    'Sep 23 - 27, 2019',
-    'John Smith',
-    'Temporarily Occupied'
-  ),
-  createData(
-    4,
-    'Michael Jackson',
-    'Sep 23 - 27, 2019',
-    'John Smith',
-    'Occupied'
-  ),
-  createData(
-    5,
-    'Bruce Springsteen',
-    'Sep 23 - 27, 2019',
-    'John Smith',
-    'Vacant'
-  )
-]
+import AddSlotPopup from './AddSlotPopup'
 
 const useStyles = makeStyles(theme => ({
   seeMore: {
@@ -50,10 +21,30 @@ const useStyles = makeStyles(theme => ({
 
 const Slots = () => {
   const classes = useStyles()
+  const { app } = useContext(FirebaseContext)
+  const [slots, setSlots] = useState(null)
+
+  const slotRef = app.database().ref('/slots')
+
+  useEffect(() => {
+    slotRef.on('value', snapshot => {
+      setSlots(snapshot.val())
+    })
+  }, [])
+
+  const actions = ['edit', 'delete']
+
   return (
-    <Paper className={classes.paper}>
-      <AppTable title="Parking Slots" data={rows}></AppTable>
-    </Paper>
+    <React.Fragment>
+      <AddSlotPopup></AddSlotPopup>
+      <Paper className={classes.paper}>
+        <AppTable
+          title="Parking Slots"
+          data={slots}
+          actions={actions}
+        ></AppTable>
+      </Paper>
+    </React.Fragment>
   )
 }
 
