@@ -39,7 +39,12 @@ const Login = () => {
 
   useEffect(() => {
     const unregisterAuthObserver = app.auth().onAuthStateChanged(user => {
-      state.setUser(user)
+      if (user) {
+        const userRef = app.database().ref(`/users/${user.uid}`)
+        userRef.once('value').then(snapshot => {
+          dispatch({ type: 'setUser', payload: snapshot.val() })
+        })
+      }
     })
     return () => unregisterAuthObserver()
   }, [])
@@ -58,7 +63,8 @@ const Login = () => {
             uid,
             details: {
               displayName,
-              email
+              email,
+              isAdmin: false
             }
           }
 
@@ -70,24 +76,36 @@ const Login = () => {
     }
   }
 
+  const displayLogin = () => {
+    const { user } = state
+    let ui = (
+      <Container component="main" maxWidth="sm">
+        <div className={classes.paper}>
+          <Avatar className={classes.avatar}>
+            <LockOutlinedIcon />
+          </Avatar>
+          <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={app.auth()} />
+        </div>
+        <Box mt={8}>
+          <Copyright />
+        </Box>
+      </Container>
+    )
+    if (user) {
+      if (user.isAdmin) {
+        ui = <Redirect to="/admin"></Redirect>
+      } else {
+        ui = <Redirect to="/home"></Redirect>
+      }
+    }
+
+    return ui
+  }
+
   return (
     <div>
       <AppHeader></AppHeader>
-      {state.user ? (
-        <Redirect to="/home"></Redirect>
-      ) : (
-        <Container component="main" maxWidth="sm">
-          <div className={classes.paper}>
-            <Avatar className={classes.avatar}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={app.auth()} />
-          </div>
-          <Box mt={8}>
-            <Copyright />
-          </Box>
-        </Container>
-      )}
+      {displayLogin()}
     </div>
   )
 }

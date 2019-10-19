@@ -101,7 +101,7 @@ const subviews = {
 }
 
 const Dashboard = props => {
-  const { history } = props
+  const { history, match } = props
   const classes = useStyles()
 
   const [open, setOpen] = useState(false)
@@ -121,6 +121,7 @@ const Dashboard = props => {
         isOpen={open}
         handleDrawerOpen={handleDrawerOpen}
         history={history}
+        match={match}
       ></AppHeader>
       <AppDrawer
         isOpen={open}

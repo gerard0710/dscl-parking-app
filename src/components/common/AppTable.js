@@ -9,12 +9,32 @@ import TableRow from '@material-ui/core/TableRow'
 import Typography from '@material-ui/core/Typography'
 
 import AppTableActions from './AppTableActions'
+import AppTableSwitch from './AppTableSwitch'
+import { Switch } from '@material-ui/core'
 
 const AppTable = props => {
-  const { title, data, actions } = props
+  const { title, data, actions, booleanSwitch } = props
 
   let headings = []
   let list = []
+
+  const buildDisplay = (cellData, cellHeading, cellKey) => {
+    if (typeof cellData === 'boolean') {
+      if (booleanSwitch) {
+        return (
+          <AppTableSwitch
+            tableTitle={title}
+            cellHeading={cellHeading}
+            cellValue={cellData}
+            cellKey={cellKey}
+          ></AppTableSwitch>
+        )
+      }
+      return cellData ? 'Yes' : 'No'
+    } else {
+      return cellData
+    }
+  }
 
   if (data) {
     const sample = data[Object.keys(data)[0]]
@@ -24,11 +44,17 @@ const AppTable = props => {
       let row = (
         <TableRow key={key}>
           {headings.map(heading => (
-            <TableCell key={`${key}-${heading}`}>{value[heading]}</TableCell>
+            <TableCell key={`${key}-${heading}`}>
+              {buildDisplay(value[heading], heading, key)}
+            </TableCell>
           ))}
           {actions ? (
             <TableCell>
-              <AppTableActions actions={actions} id={key}></AppTableActions>
+              <AppTableActions
+                actions={actions}
+                id={key}
+                tableTitle={title}
+              ></AppTableActions>
             </TableCell>
           ) : null}
         </TableRow>
@@ -58,29 +84,7 @@ const AppTable = props => {
             ) : null}
           </TableRow>
         </TableHead>
-        <TableBody>
-          {list}
-
-          {/** TODO: Map through data and build table body
-
-          <TableRow key={row.number}>
-              <TableCell>{row.number}</TableCell>
-              <TableCell>{row.owner}</TableCell>
-              <TableCell>{row.ownershipDate}</TableCell>
-              <TableCell>{row.tenant}</TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell align="right">
-                <IconButton>
-                  <EditIcon></EditIcon>
-                </IconButton>
-                <IconButton>
-                  <DeleteIcon></DeleteIcon>
-                </IconButton>
-              </TableCell>
-            </TableRow>
-        
-        */}
-        </TableBody>
+        <TableBody>{list}</TableBody>
       </Table>
     </React.Fragment>
   )

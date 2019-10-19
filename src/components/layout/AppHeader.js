@@ -95,19 +95,55 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const AppHeader = props => {
-  const { isOpen, handleDrawerOpen, isPublic, history } = props
+  const { isOpen, handleDrawerOpen, isPublic, history, match } = props
+
   const classes = useStyles()
 
-  const { app, state } = useContext(FirebaseContext)
+  const { app, state, dispatch } = useContext(FirebaseContext)
 
   const signOut = () => {
     app
       .auth()
       .signOut()
       .then(() => {
-        state.setUser(null)
+        dispatch({ type: 'setUser', payload: null })
         history.push('/')
       })
+  }
+
+  const handleRedirect = () => {
+    if (match && match.path === '/home') {
+      history.push('/admin')
+    } else if (match && match.path === '/admin') {
+      history.push('/home')
+    }
+  }
+
+  const buildHeaderButtons = () => {
+    const { user } = state
+    let ui = []
+
+    if (user) {
+      ui.push(
+        <Button color="inherit" onClick={signOut} key={`${user.uid}-logout`}>
+          Logout
+        </Button>
+      )
+
+      if (user.isAdmin) {
+        ui.push(
+          <Button
+            color="inherit"
+            onClick={handleRedirect}
+            key={`${user.uid}-auxbtn`}
+          >
+            Go to {match && match.path === '/home' ? 'Admin' : 'Home'}
+          </Button>
+        )
+      }
+    }
+
+    return ui
   }
 
   return (
@@ -135,21 +171,7 @@ const AppHeader = props => {
             DSCL Manila Parking
           </Typography>
 
-          {state.user ? (
-            <React.Fragment>
-              <Button color="inherit" onClick={signOut}>
-                Logout
-              </Button>
-              <Button
-                color="inherit"
-                onClick={() => {
-                  history.push('/admin')
-                }}
-              >
-                Go to Admin
-              </Button>
-            </React.Fragment>
-          ) : null}
+          {buildHeaderButtons()}
         </Toolbar>
       </AppBar>
     </div>
