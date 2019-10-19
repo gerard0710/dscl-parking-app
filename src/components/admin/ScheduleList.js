@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Grid from '@material-ui/core/Grid'
 import Container from '@material-ui/core/Container'
 
+import { FirebaseContext } from '../../firebase/firebaseContext'
 import ScheduleCard from './ScheduleCard'
+import { Typography } from '@material-ui/core'
 
 const schedules = [
   {
@@ -103,13 +105,32 @@ const useStyles = makeStyles(theme => ({
 
 const ScheduleList = () => {
   const classes = useStyles()
+  const { app, state, dispatch } = useContext(FirebaseContext)
+  const scheduleRef = app.database().ref('/schedules')
+
+  useEffect(() => {
+    scheduleRef.on('value', snapshot => {
+      dispatch({ type: 'setSchedule', payload: snapshot.val() })
+    })
+  }, [])
+
+  const buildScheduleGrid = () => {
+    let ui = <Typography>No entries found...</Typography>
+    const { schedules } = state
+
+    if (schedules) {
+      Object.entries(schedules).forEach(([key, value]) => {
+        ui.push(<ScheduleCard key={key} schedule={value}></ScheduleCard>)
+      })
+    }
+
+    return ui
+  }
 
   return (
     <Container maxWidth="md" component="main" className={classes.container}>
       <Grid container spacing={2} alignItems="center" justify="center">
-        {schedules.map((schedule, index) => (
-          <ScheduleCard schedule={schedule} key={index} index></ScheduleCard>
-        ))}
+        {buildScheduleGrid()}
       </Grid>
     </Container>
   )

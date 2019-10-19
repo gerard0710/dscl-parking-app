@@ -78,7 +78,11 @@ const Home = props => {
   return (
     <React.Fragment>
       <CssBaseline />
-      <AppHeader isPublic={isPublic} history={history}></AppHeader>
+      <AppHeader
+        isPublic={isPublic}
+        history={history}
+        match={match}
+      ></AppHeader>
       <Container maxWidth="md" component="main" className={classes.container}>
         <List className={classes.list}>
           {list.length > 0 ? list : <ListItem>No entries found...</ListItem>}

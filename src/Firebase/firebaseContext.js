@@ -1,39 +1,45 @@
 import React, { createContext, useState, useReducer } from 'react'
 import FirebaseApp from 'firebase/app'
-import FirebaseDb from 'firebase/database'
+import firebase from 'firebase'
 
 import config from './configs'
 
 const app = FirebaseApp.initializeApp(config)
 
-const FirebaseContext = createContext({
-  user: null,
-  setUser: () => {}
-})
+const FirebaseContext = createContext(null)
 
 export { FirebaseContext }
 
 export default ({ children }) => {
-  const slotReducer = (state, action) => {
+  const initState = {
+    user: null,
+    schedules: null
+  }
+
+  const reducer = (state, action) => {
     let updates = {}
     switch (action.type) {
+      case 'setUser':
+        return { ...state, user: action.payload }
+
+      case 'getUser':
+        return state
+
+      case 'deleteUser':
+        app
+          .database()
+          .ref(`/users/${action.payload}`)
+          .remove()
+        return state
+
       case 'addSlot':
-        const slotRef = app.database().ref('/slots')
-        const newSlot = {
-          owner: '',
-          status: 'Vacant',
-          tenant: '',
-          title: action.payload
-        }
-
-        const newKey = slotRef.push().key
-
-        updates['/slots/' + newKey] = newSlot
+        const { key, slot } = action.payload
+        updates[`/slots/${key}`] = slot
         app
           .database()
           .ref()
           .update(updates)
-        break
+        return state
 
       case 'editSlot':
         updates[`/slots/${action.payload}`] = action.slotData
@@ -41,38 +47,49 @@ export default ({ children }) => {
           .database()
           .ref()
           .update(updates)
-        break
+        return state
 
       case 'deleteSlot':
         app
           .database()
           .ref(`/slots/${action.payload}`)
           .remove()
-        break
+        return state
 
       case 'addUser':
         const { uid, details } = action.payload
-        const usersRef = app.database().ref('/users')
         updates[`/users/${uid}`] = details
         app
           .database()
           .ref()
           .update(updates)
+        return state
+
+      case 'addAuthUser':
+        const { email, password, displayName, isAdmin } = action.payload
+
+        firebase
+          .auth()
+          .createUserWithEmailAndPassword(email, password)
+          .then(authUser => {
+            const { user } = authUser
+            updates[`/users/${user.uid}`] = { email, displayName, isAdmin }
+            app
+              .database()
+              .ref()
+              .update(updates)
+          })
+        return state
+
+      case 'setSchedule':
+        return { ...state, schedules: action.payload }
 
       default:
         break
     }
   }
 
-  const initState = {
-    user: null,
-    setUser: user => {
-      setState({ ...state, user: user })
-    }
-  }
-
-  const [state, setState] = useState(initState)
-  const [slotState, dispatch] = useReducer(slotReducer)
+  const [state, dispatch] = useReducer(reducer, initState)
 
   return (
     <FirebaseContext.Provider value={{ app, state, dispatch }}>

@@ -9,8 +9,34 @@ import DeleteIcon from '@material-ui/icons/Delete'
 
 import { FirebaseContext } from '../../firebase/firebaseContext'
 
-function AppTableActions({ actions, id }) {
+function AppTableActions({ actions, id, tableTitle }) {
   const { dispatch } = useContext(FirebaseContext)
+
+  const handleEdit = () => {
+    switch (tableTitle) {
+      case 'Parking Slots':
+        dispatch({ type: 'editSlot', payload: '' })
+        break
+      case 'Users':
+        dispatch({ type: 'editUser', payload: '' })
+        break
+      default:
+        break
+    }
+  }
+
+  const handleDelete = id => {
+    switch (tableTitle) {
+      case 'Parking Slots':
+        dispatch({ type: 'deleteSlot', payload: id })
+        break
+      case 'Users':
+        dispatch({ type: 'deleteUser', payload: id })
+        break
+      default:
+        break
+    }
+  }
 
   return (
     <React.Fragment>
@@ -18,10 +44,7 @@ function AppTableActions({ actions, id }) {
         switch (action) {
           case 'edit':
             return (
-              <IconButton
-                key={`${action}-${id}`}
-                onClick={() => dispatch({ type: 'deleteSlot', payload: id })}
-              >
+              <IconButton key={`${action}-${id}`} onClick={handleEdit}>
                 <EditIcon></EditIcon>
               </IconButton>
             )
@@ -29,7 +52,7 @@ function AppTableActions({ actions, id }) {
             return (
               <IconButton
                 key={`${action}-${id}`}
-                onClick={() => dispatch({ type: 'deleteSlot', payload: id })}
+                onClick={() => handleDelete(id)}
               >
                 <DeleteIcon></DeleteIcon>
               </IconButton>
