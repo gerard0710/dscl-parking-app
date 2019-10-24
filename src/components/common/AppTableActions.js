@@ -1,28 +1,20 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Dialog from '@material-ui/core/Dialog'
 import IconButton from '@material-ui/core/IconButton'
+import TextField from '@material-ui/core/TextField'
+import Switch from '@material-ui/core/Switch'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 
 import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'
 
 import { FirebaseContext } from '../../firebase/firebaseContext'
 
-function AppTableActions({ actions, id, tableTitle }) {
+function AppTableActions({ actions, id, tableTitle, firebaseRef }) {
   const { dispatch } = useContext(FirebaseContext)
 
   const handleEdit = () => {
-    switch (tableTitle) {
-      case 'Parking Slots':
-        dispatch({ type: 'editSlot', payload: '' })
-        break
-      case 'Users':
-        dispatch({ type: 'editUser', payload: '' })
-        break
-      default:
-        break
-    }
+    dispatch({ type: 'openEditDialog', payload: `${firebaseRef}` })
   }
 
   const handleDelete = id => {
@@ -44,7 +36,7 @@ function AppTableActions({ actions, id, tableTitle }) {
         switch (action) {
           case 'edit':
             return (
-              <IconButton key={`${action}-${id}`} onClick={handleEdit}>
+              <IconButton key={`${action}-${id}`} onClick={() => handleEdit()}>
                 <EditIcon></EditIcon>
               </IconButton>
             )
@@ -67,24 +59,3 @@ function AppTableActions({ actions, id, tableTitle }) {
 }
 
 export default AppTableActions
-
-/**
- * {actions.map(action => {
-              switch (action) {
-                case 'edit':
-                  return (
-                    <IconButton>
-                      <EditIcon></EditIcon>
-                    </IconButton>
-                  )
-                case 'delete':
-                  return (
-                    <IconButton onClick={}>
-                      <DeleteIcon></DeleteIcon>
-                    </IconButton>
-                  )
-                default:
-                  break
-              }
-            })}
- */

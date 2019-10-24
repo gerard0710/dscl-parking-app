@@ -112,7 +112,7 @@ const Dashboard = props => {
     setOpen(false)
   }
 
-  const [activePage, setActivePage] = useState('slots')
+  const [activePage, setActivePage] = useState('schedule')
 
   return (
     <div className={classes.root}>

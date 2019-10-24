@@ -1,88 +1,116 @@
-import React from 'react'
+import React, { useContext } from 'react'
 
-import { makeStyles } from '@material-ui/core/styles'
 import Card from '@material-ui/core/Card'
-import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
 import Grid from '@material-ui/core/Grid'
-import Typography from '@material-ui/core/Typography'
-import Button from '@material-ui/core/Button'
+import DateFnsUtils from '@date-io/date-fns'
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker
+} from '@material-ui/pickers'
+import { CardActions, Button, CardHeader, IconButton } from '@material-ui/core'
 
-import StarIcon from '@material-ui/icons/StarBorder'
-import EditIcon from '@material-ui/icons/Edit'
+import DeleteIcon from '@material-ui/icons/Delete'
+import CachedIcon from '@material-ui/icons/Cached'
 
-import Slots from './Slots'
+import { FirebaseContext } from '../../firebase/firebaseContext'
 
-const useStyles = makeStyles(theme => ({
-  '@global': {
-    body: {
-      backgroundColor: theme.palette.common.white
-    },
-    ul: {
-      margin: 0,
-      padding: 0
-    },
-    li: {
-      listStyle: 'none'
-    }
-  },
-  appBar: {
-    borderBottom: `1px solid ${theme.palette.divider}`
-  },
-  toolbar: {
-    flexWrap: 'wrap'
-  },
-  toolbarTitle: {
-    flexGrow: 1
-  },
-  link: {
-    margin: theme.spacing(1, 1.5)
-  },
-  heroContent: {
-    padding: theme.spacing(8, 0, 6)
-  },
-  cardHeader: {
-    backgroundColor: theme.palette.grey[200]
-  },
-  cardPricing: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'baseline',
-    marginBottom: theme.spacing(2)
-  },
-  footer: {
-    borderTop: `1px solid ${theme.palette.divider}`,
-    marginTop: theme.spacing(8),
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-    [theme.breakpoints.up('sm')]: {
-      paddingTop: theme.spacing(6),
-      paddingBottom: theme.spacing(6)
-    }
-  }
-}))
+import AppTable from '../common/AppTable'
 
 const ScheduleCard = ({ schedule, index }) => {
-  const classes = useStyles()
+  const scheduleRef = `schedules/${index}`
+  const { app, dispatch } = useContext(FirebaseContext)
+
+  const handleRefresh = () => {
+    const slotsRef = app.database().ref('/slots')
+    slotsRef
+      .orderByChild('isOpen')
+      .equalTo(true)
+      .once('value', snapshot => {
+        let slots = {}
+        Object.entries(snapshot.val()).forEach(([key, value]) => {
+          let { isOpen, ...newValue } = value
+          newValue = { ...newValue, owner: '', status: 'Vacant', tenant: '' }
+          slots[key] = newValue
+        })
+        dispatch({ type: 'refreshSchedule', payload: { slots, scheduleRef } })
+      })
+  }
+
+  const handleDelete = () => {
+    dispatch({ type: 'deleteSchedule', payload: scheduleRef })
+  }
+
+  const handleStartDateChange = date => {
+    date = date.toISOString()
+    dispatch({ type: 'editStartDate', payload: { date, scheduleRef } })
+  }
+
+  const handleEndDateChange = date => {
+    date = date.toISOString()
+    dispatch({ type: 'editEndDate', payload: { date, scheduleRef } })
+  }
+
   return (
     <Grid item key={index} xs={12} sm={12} md={6}>
       <Card>
         <CardHeader
-          subheader={schedule.date}
-          action={<EditIcon></EditIcon>}
-          className={classes.cardHeader}
-        />
+          action={
+            <React.Fragment>
+              <IconButton onClick={handleRefresh}>
+                <CachedIcon></CachedIcon>
+              </IconButton>
+              <IconButton onClick={handleDelete}>
+                <DeleteIcon></DeleteIcon>
+              </IconButton>
+            </React.Fragment>
+          }
+        >
+          <p>IN</p>
+        </CardHeader>
         <CardContent>
-          <Slots></Slots>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <Grid container justify="space-around">
+              <KeyboardDatePicker
+                disableToolbar
+                variant="inline"
+                format="MM/dd/yyyy"
+                margin="normal"
+                id="date-picker-inline"
+                label="Start date"
+                KeyboardButtonProps={{
+                  'aria-label': 'change date'
+                }}
+                value={schedule.startDate}
+                onChange={handleStartDateChange}
+              />
+
+              <KeyboardDatePicker
+                disableToolbar
+                variant="inline"
+                format="MM/dd/yyyy"
+                margin="normal"
+                id="date-picker-inline"
+                label="End date"
+                KeyboardButtonProps={{
+                  'aria-label': 'change date'
+                }}
+                value={schedule.endDate}
+                onChange={handleEndDateChange}
+              />
+            </Grid>
+          </MuiPickersUtilsProvider>
+          <br />
+          <AppTable
+            title="Slots"
+            data={schedule.slots}
+            excludedHeaders={['isOpen']}
+            actions={['edit', 'delete']}
+            firebaseRef={`${scheduleRef}/slots`}
+          ></AppTable>
         </CardContent>
         <CardActions>
-          <Button variant="contained" color="primary">
-            Edit
-          </Button>
-          <Button variant="contained" color="primary">
-            Delete
-          </Button>
+          <Button>Randomize</Button>
         </CardActions>
       </Card>
     </Grid>

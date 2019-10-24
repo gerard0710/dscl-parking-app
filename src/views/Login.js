@@ -61,7 +61,7 @@ const Login = () => {
           const { displayName, email, uid } = authResult.user
           const payload = {
             uid,
-            details: {
+            userDetails: {
               displayName,
               email,
               isAdmin: false
