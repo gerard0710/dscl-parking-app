@@ -54,25 +54,43 @@ const Home = props => {
   const [slots, setSlots] = useState(null)
 
   const isPublic = match.path === '/home'
-  const slotRef = app.database().ref('/slots')
+  const scheduleRef = app.database().ref('/schedules')
 
   useEffect(() => {
-    slotRef.orderByValue().on('value', snapshot => {
-      setSlots(snapshot.val())
-    })
+    const toSunday = new Date()
+    const toSaturday = new Date()
+    const day = toSunday.getDay() || 7
+    if (day !== 1) {
+      toSunday.setHours(-24 * (day - 1))
+    }
+
+    scheduleRef
+      .orderByChild('startDate')
+      .startAt(toSunday.toISOString())
+      .on('value', snapshot => {
+        Object.entries(snapshot.val()).forEach(([key, value]) => {
+          setSlots(value.slots)
+        })
+      })
   }, [])
 
-  let list = []
+  const buildSlots = () => {
+    let ui = <ListItem>No entries found...</ListItem>
+    if (slots) {
+      if (slots) {
+        ui = []
+        Object.entries(slots).forEach(([key, value]) => {
+          ui.push(
+            <React.Fragment key={key}>
+              <SlotList slot={value}></SlotList>
+              <Divider variant="inset" component="li"></Divider>
+            </React.Fragment>
+          )
+        })
+      }
+    }
 
-  if (slots) {
-    Object.entries(slots).forEach(([key, value]) => {
-      list.push(
-        <React.Fragment key={key}>
-          <SlotList slot={value}></SlotList>
-          <Divider variant="inset" component="li"></Divider>
-        </React.Fragment>
-      )
-    })
+    return ui
   }
 
   return (
@@ -84,9 +102,7 @@ const Home = props => {
         match={match}
       ></AppHeader>
       <Container maxWidth="md" component="main" className={classes.container}>
-        <List className={classes.list}>
-          {list.length > 0 ? list : <ListItem>No entries found...</ListItem>}
-        </List>
+        <List className={classes.list}>{buildSlots()}</List>
       </Container>
     </React.Fragment>
   )
