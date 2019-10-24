@@ -93,6 +93,7 @@ const Slots = () => {
           data={slots}
           actions={actions}
           booleanSwitch
+          firebaseRef={`slots`}
         ></AppTable>
       </Paper>
     </React.Fragment>

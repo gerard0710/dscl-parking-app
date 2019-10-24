@@ -13,11 +13,28 @@ export { FirebaseContext }
 export default ({ children }) => {
   const initState = {
     user: null,
-    schedules: null
+    schedules: null,
+    isDialogOpen: false,
+    firebaseRef: ''
   }
 
   const reducer = (state, action) => {
     let updates = {}
+    let {
+      key,
+      slot,
+      uid,
+      userDetails,
+      email,
+      password,
+      displayName,
+      isAdmin,
+      newKey,
+      scheduleDetails,
+      slots,
+      scheduleRef,
+      date
+    } = action.payload
     switch (action.type) {
       case 'setUser':
         return { ...state, user: action.payload }
@@ -33,7 +50,6 @@ export default ({ children }) => {
         return state
 
       case 'addSlot':
-        const { key, slot } = action.payload
         updates[`/slots/${key}`] = slot
         app
           .database()
@@ -57,8 +73,7 @@ export default ({ children }) => {
         return state
 
       case 'addUser':
-        const { uid, details } = action.payload
-        updates[`/users/${uid}`] = details
+        updates[`/users/${uid}`] = userDetails
         app
           .database()
           .ref()
@@ -66,8 +81,6 @@ export default ({ children }) => {
         return state
 
       case 'addAuthUser':
-        const { email, password, displayName, isAdmin } = action.payload
-
         firebase
           .auth()
           .createUserWithEmailAndPassword(email, password)
@@ -83,6 +96,59 @@ export default ({ children }) => {
 
       case 'setSchedule':
         return { ...state, schedules: action.payload }
+
+      case 'addSchedule':
+        updates[`/schedules/${newKey}`] = scheduleDetails
+        app
+          .database()
+          .ref()
+          .update(updates)
+        return state
+
+      case 'editSchedule':
+        updates[state.firebaseRef] = action.payload
+        app
+          .database()
+          .ref()
+          .update(updates)
+        return { ...state, isDialogOpen: false }
+
+      case 'openEditDialog':
+        return { ...state, isDialogOpen: true, firebaseRef: action.payload }
+
+      case 'closeEditDialog':
+        return { ...state, isDialogOpen: false, firebaseRef: '' }
+
+      case 'refreshSchedule':
+        updates[`${scheduleRef}/slots`] = slots
+        app
+          .database()
+          .ref()
+          .update(updates)
+        return state
+
+      case 'deleteSchedule':
+        app
+          .database()
+          .ref(action.payload)
+          .remove()
+        return state
+
+      case 'editStartDate':
+        updates[`${scheduleRef}/startDate`] = date
+        app
+          .database()
+          .ref()
+          .update(updates)
+        return state
+
+      case 'editEndDate':
+        updates[`${scheduleRef}/endDate`] = date
+        app
+          .database()
+          .ref()
+          .update(updates)
+        return state
 
       default:
         break

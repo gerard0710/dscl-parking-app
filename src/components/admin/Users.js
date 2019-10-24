@@ -135,6 +135,7 @@ const Users = () => {
           data={users}
           actions={['edit', 'delete']}
           booleanSwitch
+          firebaseRef={`users`}
         ></AppTable>
       </Paper>
     </React.Fragment>
