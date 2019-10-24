@@ -26,10 +26,9 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const SlotList = props => {
+const SlotList = ({ slot }) => {
   const classes = useStyles()
   const { state } = useContext(FirebaseContext)
-  const { slot } = props
 
   let primaryAction = null
   let secondaryAction = null

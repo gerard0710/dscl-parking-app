@@ -133,7 +133,7 @@ const ScheduleList = () => {
   }
 
   return (
-    <Container maxWidth="md" component="main" className={classes.container}>
+    <React.Fragment>
       <AppPopup
         content={
           <Card className={classes.card}>
@@ -180,10 +180,12 @@ const ScheduleList = () => {
           </Card>
         }
       ></AppPopup>
-      <Grid container spacing={2} alignItems="center" justify="center">
-        {buildScheduleGrid()}
-      </Grid>
-    </Container>
+      <Container maxWidth="md" component="main" className={classes.container}>
+        <Grid container spacing={2} alignItems="center" justify="center">
+          {buildScheduleGrid()}
+        </Grid>
+      </Container>
+    </React.Fragment>
   )
 }
 
