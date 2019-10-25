@@ -42,7 +42,7 @@ const Login = () => {
       if (user) {
         const userRef = app.database().ref(`/users/${user.uid}`)
         userRef.once('value').then(snapshot => {
-          dispatch({ type: 'setUser', payload: snapshot.val() })
+          dispatch({ type: 'setUser', payload: { user: snapshot.val() } })
         })
       }
     })

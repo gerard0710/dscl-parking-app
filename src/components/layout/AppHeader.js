@@ -106,7 +106,7 @@ const AppHeader = props => {
       .auth()
       .signOut()
       .then(() => {
-        dispatch({ type: 'setUser', payload: null })
+        dispatch({ type: 'setUser', payload: { user: null } })
         history.push('/')
       })
   }
