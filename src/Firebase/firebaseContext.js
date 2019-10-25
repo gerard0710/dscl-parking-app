@@ -33,11 +33,12 @@ export default ({ children }) => {
       scheduleDetails,
       slots,
       scheduleRef,
-      date
+      date,
+      user
     } = action.payload
     switch (action.type) {
       case 'setUser':
-        return { ...state, user: action.payload }
+        return { ...state, user }
 
       case 'getUser':
         return state
