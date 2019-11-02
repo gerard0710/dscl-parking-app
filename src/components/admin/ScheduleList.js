@@ -87,7 +87,7 @@ const ScheduleList = () => {
 
   useEffect(() => {
     scheduleRef.on('value', snapshot => {
-      dispatch({ type: 'setSchedule', payload: snapshot.val() })
+      dispatch({ type: 'setSchedule', payload: { schedules: snapshot.val() } })
     })
   }, [])
 

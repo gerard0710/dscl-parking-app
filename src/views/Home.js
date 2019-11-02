@@ -29,24 +29,6 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const slots = [
-  {
-    title: 'Slot 1',
-    status: 'Temporarily Occupied',
-    tenant: 'John Smith'
-  },
-  {
-    title: 'Slot 2',
-    status: 'Occupied',
-    tenant: 'John Smith'
-  },
-  {
-    title: 'Slot 3',
-    status: 'Vacant',
-    tenant: 'John Smith'
-  }
-]
-
 const Home = props => {
   const { match, history } = props
   const classes = useStyles()
@@ -58,19 +40,23 @@ const Home = props => {
 
   useEffect(() => {
     const toSunday = new Date()
-    const toSaturday = new Date()
     const day = toSunday.getDay() || 7
-    if (day !== 1) {
-      toSunday.setHours(-24 * (day - 1))
+    let diff = -24 * (day - 1)
+    if (day === 1) {
+      diff = day
     }
+
+    toSunday.setHours(diff)
 
     scheduleRef
       .orderByChild('startDate')
       .startAt(toSunday.toISOString())
       .on('value', snapshot => {
-        Object.entries(snapshot.val()).forEach(([key, value]) => {
-          setSlots(value.slots)
-        })
+        if (snapshot.val()) {
+          Object.entries(snapshot.val()).forEach(([key, value]) => {
+            setSlots(value.slots)
+          })
+        }
       })
   }, [])
 

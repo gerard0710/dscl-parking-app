@@ -95,7 +95,10 @@ const AppTable = props => {
   }
 
   const handleClose = () => {
-    dispatch({ type: 'closeEditDialog' })
+    dispatch({
+      type: 'closeEditDialog',
+      payload: { isDialogOpen: false, firebaseRef: '' }
+    })
   }
 
   return (
