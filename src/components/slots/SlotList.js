@@ -68,13 +68,14 @@ const SlotList = ({ slot }) => {
           primary={headingText}
           secondary={
             <React.Fragment>
+              <Typography component="span">Owner : {slot.owner}</Typography>
               <Typography
                 component="span"
                 variant="body2"
                 className={classes.inline}
                 color="textPrimary"
               >
-                {slot.tenant}
+                Tenant : {slot.tenant}
               </Typography>
               {secondaryAction}
             </React.Fragment>

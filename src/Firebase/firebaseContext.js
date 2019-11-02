@@ -20,7 +20,9 @@ export default ({ children }) => {
 
   const reducer = (state, action) => {
     let updates = {}
+
     let {
+      id,
       key,
       slot,
       uid,
@@ -34,8 +36,14 @@ export default ({ children }) => {
       slots,
       scheduleRef,
       date,
-      user
+      user,
+      fbRef,
+      autocomplete,
+      schedules,
+      isDialogOpen,
+      firebaseRef
     } = action.payload
+
     switch (action.type) {
       case 'setUser':
         return { ...state, user }
@@ -46,7 +54,7 @@ export default ({ children }) => {
       case 'deleteUser':
         app
           .database()
-          .ref(`/users/${action.payload}`)
+          .ref(`/users/${id}`)
           .remove()
         return state
 
@@ -69,7 +77,7 @@ export default ({ children }) => {
       case 'deleteSlot':
         app
           .database()
-          .ref(`/slots/${action.payload}`)
+          .ref(`/slots/${id}`)
           .remove()
         return state
 
@@ -96,7 +104,7 @@ export default ({ children }) => {
         return state
 
       case 'setSchedule':
-        return { ...state, schedules: action.payload }
+        return { ...state, schedules }
 
       case 'addSchedule':
         updates[`/schedules/${newKey}`] = scheduleDetails
@@ -107,18 +115,23 @@ export default ({ children }) => {
         return state
 
       case 'editSchedule':
-        updates[state.firebaseRef] = action.payload
+        updates[state.firebaseRef] = { ...scheduleDetails }
         app
           .database()
           .ref()
           .update(updates)
-        return { ...state, isDialogOpen: false }
+        return { ...state, isDialogOpen }
 
       case 'openEditDialog':
-        return { ...state, isDialogOpen: true, firebaseRef: action.payload }
+        return {
+          ...state,
+          isDialogOpen: true,
+          firebaseRef: fbRef,
+          autocomplete
+        }
 
       case 'closeEditDialog':
-        return { ...state, isDialogOpen: false, firebaseRef: '' }
+        return { ...state, isDialogOpen, firebaseRef }
 
       case 'refreshSchedule':
         updates[`${scheduleRef}/slots`] = slots
@@ -128,10 +141,30 @@ export default ({ children }) => {
           .update(updates)
         return state
 
+      case 'deleteScheduleSlot':
+        app
+          .database()
+          .ref(fbRef)
+          .once('value', snapshot => {
+            const newSchedule = snapshot.val()
+            updates[fbRef] = {
+              ...newSchedule,
+              owner: '',
+              tenant: '',
+              status: 'Vacant'
+            }
+          })
+
+        app
+          .database()
+          .ref()
+          .update(updates)
+        return state
+
       case 'deleteSchedule':
         app
           .database()
-          .ref(action.payload)
+          .ref(fbRef)
           .remove()
         return state
 

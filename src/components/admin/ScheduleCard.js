@@ -38,7 +38,7 @@ const ScheduleCard = ({ schedule, index }) => {
   }
 
   const handleDelete = () => {
-    dispatch({ type: 'deleteSchedule', payload: scheduleRef })
+    dispatch({ type: 'deleteSchedule', payload: { fbRef: scheduleRef } })
   }
 
   const handleStartDateChange = date => {
@@ -65,9 +65,7 @@ const ScheduleCard = ({ schedule, index }) => {
               </IconButton>
             </React.Fragment>
           }
-        >
-          <p>IN</p>
-        </CardHeader>
+        ></CardHeader>
         <CardContent>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <Grid container justify="space-around">
