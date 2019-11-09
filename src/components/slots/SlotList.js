@@ -26,43 +26,59 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const SlotList = ({ slot }) => {
+const SlotList = props => {
+  const { slot, id, scheduleKey } = props
   const classes = useStyles()
-  const { state } = useContext(FirebaseContext)
+  const { state, dispatch } = useContext(FirebaseContext)
 
   let primaryAction = null
-  let secondaryAction = null
   let headingText = `${slot.title} - `
+  let btnAction = null
 
   if (slot.status.toLowerCase() === 'occupied') {
-    if (slot.isTemporaryOwner) {
+    if (slot.tenant === state.user.displayName) {
+      primaryAction = <CloseIcon></CloseIcon>
+      btnAction = () => {
+        dispatch({
+          type: 'vacateSlot',
+          payload: { id, firebaseRef: `schedules/${scheduleKey}/slots/${id}` }
+        })
+      }
+    }
+
+    if (slot.isTemporary) {
       headingText += ' Temporarily'
       if (slot.owner === state.user.displayName) {
         primaryAction = <NotificationsIcon></NotificationsIcon>
+        btnAction = () => {
+          console.log('IN notify')
+        }
       }
-    } else {
-      primaryAction = <CloseIcon></CloseIcon>
     }
   } else {
-    primaryAction = <CheckIcon></CheckIcon>
-    secondaryAction = (
-      <Button variant="contained" size="small" className={classes.button}>
-        Occupy
-      </Button>
-    )
+    if (!state.slot) {
+      if (slot.tenant !== state.user.displayName) {
+        primaryAction = <CheckIcon></CheckIcon>
+        btnAction = () => {
+          dispatch({
+            type: 'occupySlot',
+            payload: { id, firebaseRef: `schedules/${scheduleKey}/slots/${id}` }
+          })
+        }
+      }
+    }
   }
 
   headingText += ` ${slot.status}`
+
+  console.log(state)
 
   return (
     <React.Fragment>
       <CssBaseline />
       <ListItem alignItems="flex-start">
         <ListItemAvatar>
-          <Avatar
-            alt="John Smith"
-            src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50"
-          />
+          <Avatar alt={slot.owner}>{slot.owner.charAt(0)}</Avatar>
         </ListItemAvatar>
         <ListItemText
           primary={headingText}
@@ -77,12 +93,13 @@ const SlotList = ({ slot }) => {
               >
                 Tenant : {slot.tenant}
               </Typography>
-              {secondaryAction}
             </React.Fragment>
           }
         />
         <ListItemSecondaryAction>
-          {primaryAction ? <IconButton>{primaryAction}</IconButton> : null}
+          {primaryAction ? (
+            <IconButton onClick={btnAction}>{primaryAction}</IconButton>
+          ) : null}
         </ListItemSecondaryAction>
       </ListItem>
     </React.Fragment>

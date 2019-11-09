@@ -15,6 +15,8 @@ import AppHeader from '../components/layout/AppHeader'
 
 import { FirebaseContext } from '../firebase/firebaseContext'
 
+import getSunday from '../utils/sundaySelector'
+
 const useStyles = makeStyles(theme => ({
   '@global': {
     body: {
@@ -41,9 +43,49 @@ const Login = () => {
     const unregisterAuthObserver = app.auth().onAuthStateChanged(user => {
       if (user) {
         const userRef = app.database().ref(`/users/${user.uid}`)
+        const scheduleSlotsRef = app.database().ref('/schedules/')
+
         userRef.once('value').then(snapshot => {
-          dispatch({ type: 'setUser', payload: { user: snapshot.val() } })
+          const currentUser = snapshot.val()
+          dispatch({
+            type: 'setUser',
+            payload: { user: { ...currentUser, uid: user.uid } }
+          })
         })
+
+        scheduleSlotsRef
+          .orderByChild('startDate')
+          .startAt(getSunday())
+          .once('value', snapshot => {
+            // console.log('>>>', snapshot.val())
+            if (snapshot.val()) {
+              let currentSlots = {}
+              let _thisUser
+              let occupied
+              Object.entries(snapshot.val()).forEach(([key, value]) => {
+                currentSlots = value.slots
+              })
+
+              userRef.once('value').then(snapshot => {
+                _thisUser = snapshot.val()
+
+                occupied = Object.entries(currentSlots).filter(
+                  ([key, value]) => {
+                    return value.tenant === _thisUser.displayName
+                  }
+                )
+
+                if (occupied.length > 0) {
+                  occupied = occupied[0]
+
+                  dispatch({
+                    type: 'setCurrentSlot',
+                    payload: { slot: { [occupied[0]]: occupied[1] } }
+                  })
+                }
+              })
+            }
+          })
       }
     })
     return () => unregisterAuthObserver()

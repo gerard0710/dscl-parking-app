@@ -15,7 +15,8 @@ export default ({ children }) => {
     user: null,
     schedules: null,
     isDialogOpen: false,
-    firebaseRef: ''
+    firebaseRef: '',
+    slot: null
   }
 
   const reducer = (state, action) => {
@@ -43,6 +44,8 @@ export default ({ children }) => {
       isDialogOpen,
       firebaseRef
     } = action.payload
+
+    let selectedSlot = null
 
     switch (action.type) {
       case 'setUser':
@@ -80,6 +83,63 @@ export default ({ children }) => {
           .ref(`/slots/${id}`)
           .remove()
         return state
+
+      case 'occupySlot':
+        console.log(firebaseRef)
+        app
+          .database()
+          .ref(firebaseRef)
+          .once('value', snapshot => {
+            selectedSlot = snapshot.val()
+            let isTemporary = true
+
+            if (selectedSlot.owner === state.user.displayName) {
+              isTemporary = false
+            }
+
+            selectedSlot = {
+              ...selectedSlot,
+              tenant: state.user.displayName,
+              isTemporary,
+              status: 'Occupied'
+            }
+
+            updates[firebaseRef] = { ...selectedSlot }
+
+            app
+              .database()
+              .ref()
+              .update(updates)
+          })
+
+        return { ...state, slot: selectedSlot }
+
+      case 'vacateSlot':
+        app
+          .database()
+          .ref(firebaseRef)
+          .once('value', snapshot => {
+            selectedSlot = snapshot.val()
+
+            selectedSlot = {
+              ...selectedSlot,
+              tenant: '',
+              status: 'Vacant',
+              isTemporary: null
+            }
+
+            updates[firebaseRef] = { ...selectedSlot }
+
+            app
+              .database()
+              .ref()
+              .update(updates)
+          })
+
+        return { ...state, slot: null }
+
+      case 'setCurrentSlot':
+        return { ...state, slot }
 
       case 'addUser':
         updates[`/users/${uid}`] = userDetails

@@ -12,6 +12,8 @@ import { FirebaseContext } from '../firebase/firebaseContext'
 import AppHeader from '../components/layout/AppHeader'
 import SlotList from '../components/slots/SlotList'
 
+import getSunday from '../utils/sundaySelector'
+
 const useStyles = makeStyles(theme => ({
   '@global': {
     body: {
@@ -34,27 +36,20 @@ const Home = props => {
   const classes = useStyles()
   const { app } = useContext(FirebaseContext)
   const [slots, setSlots] = useState(null)
+  const [scheduleKey, setScheduleKey] = useState()
 
   const isPublic = match.path === '/home'
   const scheduleRef = app.database().ref('/schedules')
 
   useEffect(() => {
-    const toSunday = new Date()
-    const day = toSunday.getDay() || 7
-    let diff = -24 * (day - 1)
-    if (day === 1) {
-      diff = day
-    }
-
-    toSunday.setHours(diff)
-
     scheduleRef
       .orderByChild('startDate')
-      .startAt(toSunday.toISOString())
+      .startAt(getSunday())
       .on('value', snapshot => {
         if (snapshot.val()) {
           Object.entries(snapshot.val()).forEach(([key, value]) => {
             setSlots(value.slots)
+            setScheduleKey(key)
           })
         }
       })
@@ -63,17 +58,19 @@ const Home = props => {
   const buildSlots = () => {
     let ui = <ListItem>No entries found...</ListItem>
     if (slots) {
-      if (slots) {
-        ui = []
-        Object.entries(slots).forEach(([key, value]) => {
-          ui.push(
-            <React.Fragment key={key}>
-              <SlotList slot={value}></SlotList>
-              <Divider variant="inset" component="li"></Divider>
-            </React.Fragment>
-          )
-        })
-      }
+      ui = []
+      Object.entries(slots).forEach(([key, value]) => {
+        ui.push(
+          <React.Fragment key={key}>
+            <SlotList
+              slot={value}
+              id={key}
+              scheduleKey={scheduleKey}
+            ></SlotList>
+            <Divider variant="inset" component="li"></Divider>
+          </React.Fragment>
+        )
+      })
     }
 
     return ui
